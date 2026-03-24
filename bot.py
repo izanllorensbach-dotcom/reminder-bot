@@ -153,13 +153,27 @@ async def ver_semana(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"❌ {str(e)}")
 
 def main():
-    app = Application.builder().token(TELEGRAM_TOKEN).build()
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(CommandHandler("hoy", ver_hoy))
-    app.add_handler(CommandHandler("semana", ver_semana))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-    logger.info("🤖 Bot iniciado")
-    app.run_polling(allowed_updates=Update.ALL_TYPES)
+    try:
+        logger.info("🚀 Iniciando construcción de la aplicación...")
+        app = Application.builder().token(TELEGRAM_TOKEN).build()
+        app.add_handler(CommandHandler("start", start))
+        app.add_handler(CommandHandler("hoy", ver_hoy))
+        app.add_handler(CommandHandler("semana", ver_semana))
+        app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+        logger.info("🤖 Bot iniciado — arrancando polling...")
+        try:
+            app.run_polling(allowed_updates=Update.ALL_TYPES)
+        except Exception as polling_error:
+            logger.exception("❌ Error durante el polling: %s", polling_error)
+            raise
+    except Exception as startup_error:
+        logger.exception("❌ Error fatal en el arranque del bot: %s", startup_error)
+        raise
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except Exception:
+        import traceback
+        traceback.print_exc()
+        raise
